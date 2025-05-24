@@ -1,8 +1,26 @@
 # Environment variables
 .env
+.env.local
+.env.*.local
 
 # LocalStack volume data
 volume/
+
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+crash.log
+crash.*.log
+.terraformrc
+terraform.rc
+.terraform.lock.hcl
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
 
 # Node.js
 node_modules/
@@ -17,6 +35,8 @@ __pycache__/
 *.so
 .Python
 env/
+venv/
+ENV/
 build/
 develop-eggs/
 dist/
@@ -33,8 +53,16 @@ wheels/
 .installed.cfg
 *.egg
 
+# Docker
+.docker/
+
+# Logs
+logs/
+*.log
+
 # IDE files
 .idea/
 .vscode/
 *.swp
 *.swo
+.DS_Store
