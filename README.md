@@ -1,6 +1,16 @@
-# LocalStack Pro with Terraform ECS Deployment
+# LocalStack Pro with Terraform Multi-Region ECS Deployment
 
-This project uses LocalStack Pro to emulate AWS services locally for development and testing. It includes a Terraform configuration for deploying a Hello World Nginx server on ECS across multiple regions with Route53 latency-based routing.
+## Project Purpose
+
+This project demonstrates how to use LocalStack Pro to emulate a complex AWS multi-region infrastructure locally for development and testing. It implements a resilient, multi-region architecture with the following features:
+
+- **Multi-Region Deployment**: Deploys Nginx servers across both us-east-1 and us-west-1 regions
+- **Latency-Based Routing**: Uses Route53 with latency-based routing to direct users to the closest region
+- **Region-Specific Content**: Configures each region to serve region-specific content
+- **Infrastructure as Code**: Uses Terraform to define and deploy the entire infrastructure
+- **Local Development**: Runs entirely in LocalStack, allowing for fast, cost-effective testing
+
+This setup provides a foundation for developing and testing globally distributed applications with high availability and low latency, all without incurring AWS costs during development.
 
 ## Prerequisites
 
@@ -92,22 +102,78 @@ For example:
 docker-compose run terraform plan
 ```
 
-## Terraform Configuration
+## Architecture Overview
 
-The Terraform setup includes:
+The infrastructure consists of the following components:
 
-- ECS clusters in us-east-1 and us-west-1 regions
-- Nginx containers with region-specific "Hello World" messages
-- Route53 configuration with latency-based routing
-- Region-specific DNS entries
+### Compute Layer
+- **ECS Clusters**: Separate clusters in us-east-1 and us-west-1 regions
+- **Fargate Tasks**: Running Nginx containers with region-specific configurations
+- **Auto Scaling**: Configured to maintain high availability in each region
+
+### Networking Layer
+- **VPCs**: Isolated networks in each region with public and private subnets
+- **NAT Gateways**: Providing outbound connectivity for private resources
+- **Application Load Balancers**: Distributing traffic to ECS tasks in each region
+
+### DNS Layer
+- **Route53 Hosted Zone**: Managing the example.com domain
+- **Latency-Based Routing**: Directing users to the closest region
+- **Regional DNS Entries**: Allowing direct access to specific regions (e.g., us-east-1.example.com)
+
+### Security Layer
+- **Security Groups**: Controlling traffic to and from resources
+- **IAM Roles**: Providing least-privilege permissions for ECS tasks
 
 ## Docker Compose Services
 
-- **localstack**: LocalStack Pro running on port 4566
-- **terraform**: Terraform CLI configured to work with LocalStack
+- **localstack-pro**: LocalStack Pro running on port 4666 (mapped from 4566 internally)
+- **terraform-cli**: Terraform CLI configured to work with LocalStack
+
+## Testing the Deployment
+
+After successfully deploying the infrastructure, you can test the various endpoints:
+
+### Testing Direct Container Access
+
+```bash
+# Access the US-East-1 Nginx container
+curl -s http://localhost:32734
+
+# Access the US-West-1 Nginx container
+curl -s http://localhost:54262
+```
+
+### Testing Route53 DNS Entries
+
+```bash
+# Access the global endpoint (latency-based routing)
+curl -s --resolve example.com:80:127.0.0.1 http://example.com
+
+# Access the US-East-1 regional endpoint directly
+curl -s --resolve us-east-1.example.com:80:127.0.0.1 http://us-east-1.example.com
+
+# Access the US-West-1 regional endpoint directly
+curl -s --resolve us-west-1.example.com:80:127.0.0.1 http://us-west-1.example.com
+```
+
+Note: The port numbers for direct container access may vary with each deployment. Use `docker ps | grep nginx` to find the current port mappings.
 
 ## Stopping the Services
 
 ```bash
+make all-down
+# or
 docker-compose down
 ```
+
+## Troubleshooting
+
+### DNS Resolution Issues
+If you have trouble resolving the Route53 DNS entries, ensure you're using the `--resolve` flag with curl as shown in the examples above.
+
+### Container Access Issues
+If container ports change after redeployment, use `docker ps | grep nginx` to find the new port mappings.
+
+### LocalStack Authentication
+If you encounter authentication issues with LocalStack Pro, verify your `LOCALSTACK_AUTH_TOKEN` is correctly set in your environment.
