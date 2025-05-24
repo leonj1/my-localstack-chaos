@@ -195,6 +195,49 @@ make all-down
 docker-compose down
 ```
 
+## Chaos Engineering Testing
+
+This project includes a comprehensive chaos engineering test suite to validate the resilience of your multi-region deployment. The test suite simulates region failures and verifies that the remaining regions continue to serve traffic.
+
+### Quick Start with Chaos Testing
+
+```bash
+# Complete workflow - deploy everything and run chaos tests
+make chaos-test-full-workflow
+
+# Or step by step
+make all-up                    # Deploy LocalStack and infrastructure
+make chaos-test                # Run full chaos test suite
+
+# Individual test components (requires LocalStack running)
+make chaos-test-quick          # Quick health check
+make chaos-test-scenario-a     # Test us-east-1 failure
+make chaos-test-scenario-b     # Test us-west-1 failure
+```
+
+### Chaos Test Features
+
+- **Multi-Region Failure Simulation**: Tests both us-east-1 and us-west-1 failure scenarios
+- **ECS Service Scaling**: Simulates region failures by scaling ECS services to zero
+- **DNS Resolution Testing**: Validates Route53 global and regional endpoints
+- **Container Connectivity**: Tests direct access to nginx containers
+- **Automatic Recovery**: Restores services and validates full recovery
+- **Comprehensive Reporting**: Generates detailed JSON and human-readable reports
+
+### Test Scenarios
+
+1. **Scenario A**: Disable us-east-1, verify us-west-1 continues serving traffic
+2. **Scenario B**: Disable us-west-1, verify us-east-1 continues serving traffic
+
+Each scenario includes:
+- Initial health check
+- Chaos injection (service scaling to 0)
+- Resilience validation (remaining region works)
+- Service restoration (scaling back to 2 tasks)
+- Final health verification
+
+For detailed documentation, see [CHAOS_TESTING.md](CHAOS_TESTING.md).
+
 ## Troubleshooting
 
 ### DNS Resolution Issues

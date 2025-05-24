@@ -1,0 +1,34 @@
+{
+  "localstack": {
+    "endpoint": "http://localhost:4666",
+    "port": 4666
+  },
+  "regions": ["us-east-1", "us-west-1"],
+  "domain": "example.com",
+  "services": {
+    "ecs": {
+      "cluster_name_template": "nginx-hello-world-cluster-{region}",
+      "service_name_template": "nginx-hello-world-service-{region}",
+      "desired_count": 2
+    }
+  },
+  "timeouts": {
+    "health_check": 10,
+    "chaos_injection_wait": 10,
+    "service_restoration_wait": 15,
+    "dns_resolution": 15,
+    "container_connectivity": 10
+  },
+  "test_scenarios": [
+    {
+      "name": "disable_us_east_1",
+      "failed_region": "us-east-1",
+      "expected_working_region": "us-west-1"
+    },
+    {
+      "name": "disable_us_west_1", 
+      "failed_region": "us-west-1",
+      "expected_working_region": "us-east-1"
+    }
+  ]
+}
