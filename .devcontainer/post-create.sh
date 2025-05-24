@@ -79,6 +79,10 @@ alias la='ls -A'
 alias l='ls -CF'
 alias ..='cd ..'
 alias ...='cd ../..'
+
+# quality of life
+alias gs="git status"
+alias gb="git branch"
 EOF
 
 # Create a welcome message

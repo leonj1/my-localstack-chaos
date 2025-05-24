@@ -17,6 +17,9 @@ RUN pip3 install --no-cache-dir awscli
 # Set up working directory
 WORKDIR /terraform
 
+# Copy terraform files
+COPY terraform/ /terraform/
+
 # Copy entrypoint script
 COPY terraform/scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
@@ -26,7 +29,7 @@ ENV AWS_ACCESS_KEY_ID=test
 ENV AWS_SECRET_ACCESS_KEY=test
 ENV AWS_DEFAULT_REGION=us-east-1
 ENV LOCALSTACK_HOST=localstack
-ENV LOCALSTACK_PORT=4666
+ENV LOCALSTACK_PORT=4566
 
 # Set the entrypoint
 ENTRYPOINT ["/entrypoint.sh"]

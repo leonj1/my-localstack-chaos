@@ -1,4 +1,6 @@
-.PHONY: help localstack-up localstack-down tf-init tf-up tf-down tf-plan build-tf-image build-integration-image integration
+.PHONY: all-up help localstack-up localstack-down tf-init tf-up tf-down tf-plan build-tf-image build-integration-image integration
+
+all-up: localstack-up tf-init tf-up
 
 help:
 	@echo "Available targets:"
@@ -23,18 +25,15 @@ build-tf-image:
 	docker build -t terraform-local -f Dockerfile.terraform .
 
 tf-init: build-tf-image
-	docker run --rm -v $(PWD)/terraform:/terraform -v $(HOME)/.aws:/root/.aws --network my-localstack-chaos_localstack-network terraform-local init
+	docker run --rm -v $(HOME)/.aws:/root/.aws --network my-localstack-chaos_localstack-network -e USE_LOCALSTACK=true terraform-local init
 
 tf-plan: build-tf-image
-	docker run --rm -v $(PWD)/terraform:/terraform -v $(HOME)/.aws:/root/.aws --network my-localstack-chaos_localstack-network terraform-local plan -var="is_localstack=true"
+	docker run --rm -v $(HOME)/.aws:/root/.aws --network my-localstack-chaos_localstack-network -e USE_LOCALSTACK=true terraform-local plan -var="is_localstack=true"
 
 tf-up: build-tf-image
-	docker run --rm -v $(PWD)/terraform:/terraform -v $(HOME)/.aws:/root/.aws --network my-localstack-chaos_localstack-network terraform-local apply -auto-approve -var="is_localstack=true"
+	docker run --rm -v $(HOME)/.aws:/root/.aws --network my-localstack-chaos_localstack-network -e USE_LOCALSTACK=true terraform-local apply-localstack -var="is_localstack=true"
 
 tf-down: build-tf-image
-	docker run --rm -v $(PWD)/terraform:/terraform -v $(HOME)/.aws:/root/.aws --network my-localstack-chaos_localstack-network terraform-local destroy -auto-approve -var="is_localstack=true"
-
-all-up: localstack-up tf-init tf-up
+	docker run --rm -v $(HOME)/.aws:/root/.aws --network my-localstack-chaos_localstack-network -e USE_LOCALSTACK=true terraform-local destroy -auto-approve -var="is_localstack=true"
 
 all-down: tf-down localstack-down
-

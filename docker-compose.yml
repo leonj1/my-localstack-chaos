@@ -3,13 +3,14 @@ version: '3.8'
 services:
   localstack:
     container_name: localstack-pro
-    image: localstack/localstack-pro:latest
+    image: localstack/localstack:latest
     ports:
       - "4666:4566"            # LocalStack Gateway
       - "4610-4659:4510-4559"  # external services port range
     environment:
       - DEBUG=1
-      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN}
+      - ACTIVATE_PRO=${ACTIVATE_PRO:-0}
+      - LOCALSTACK_AUTH_TOKEN=${LOCALSTACK_AUTH_TOKEN:-}
       - DOCKER_HOST=unix:///var/run/docker.sock
     volumes:
       - "${LOCALSTACK_VOLUME_DIR:-./volume}:/var/lib/localstack"
