@@ -5,7 +5,7 @@ set -e
 check_localstack() {
   echo "Checking if LocalStack is ready..."
   for i in {1..30}; do
-    if curl -s "http://${LOCALSTACK_HOST}:${LOCALSTACK_PORT}/health" | grep -q "\"s3\""; then
+    if curl -s "http://${LOCALSTACK_HOST}:${LOCALSTACK_PORT}/_localstack/health" | grep -q "\"s3\""; then
       echo "LocalStack is ready!"
       return 0
     fi
@@ -23,18 +23,15 @@ configure_terraform() {
   # Create a local .terraformrc file to disable signature verification
   cat > ~/.terraformrc << EOF
 provider_installation {
-  network_mirror {
-    url = "https://terraform-mirror.yevgeniy.com"
-    include = ["registry.terraform.io/*/*"]
-  }
   direct {
-    exclude = ["registry.terraform.io/*/*"]
+    include = ["registry.terraform.io/*/*"]
   }
 }
 EOF
   
-  # Create terraform.tfvars file
-  cat > terraform.tfvars << EOF
+  # Create terraform.tfvars file if it doesn't exist
+  if [ ! -f terraform.tfvars ]; then
+    cat > terraform.tfvars << EOF
 environment = "dev"
 app_name = "nginx-hello-world"
 app_count = 1
@@ -42,19 +39,12 @@ container_image = "nginx:latest"
 container_port = 80
 domain_name = "example.local"
 EOF
+  fi
 
-  # Configure providers.tf for LocalStack
-  sed -i 's/# skip_credentials_validation/skip_credentials_validation/g' providers.tf
-  sed -i 's/# skip_metadata_api_check/skip_metadata_api_check/g' providers.tf
-  sed -i 's/# skip_requesting_account_id/skip_requesting_account_id/g' providers.tf
-  sed -i 's/# access_key/access_key/g' providers.tf
-  sed -i 's/# secret_key/secret_key/g' providers.tf
-  sed -i 's/# endpoints {/endpoints {/g' providers.tf
-  sed -i 's/#   /  /g' providers.tf
-  sed -i 's/# }/}/g' providers.tf
-  
-  # Update endpoints to use LOCALSTACK_HOST environment variable
-  sed -i "s/http:\/\/localhost:4566/http:\/\/${LOCALSTACK_HOST}:${LOCALSTACK_PORT}/g" providers.tf
+  # Update endpoints to use LOCALSTACK_HOST environment variable if needed
+  if grep -q "http://localstack:4566" providers.tf; then
+    sed -i "s/http:\/\/localstack:4566/http:\/\/${LOCALSTACK_HOST}:${LOCALSTACK_PORT}/g" providers.tf
+  fi
 }
 
 # Main execution

@@ -1,0 +1,105 @@
+{
+  "name": "LocalStack Chaos Engineering",
+  "image": "mcr.microsoft.com/devcontainers/python:1-3.13-bullseye",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "moby": true,
+      "azureDnsAutoDetection": true,
+      "installDockerBuildx": true,
+      "version": "latest",
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/terraform:1": {
+      "version": "latest",
+      "tflint": "latest",
+      "terragrunt": "latest"
+    },
+    "ghcr.io/devcontainers/features/aws-cli:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": false,
+      "installOhMyZsh": false,
+      "upgradePackages": true,
+      "username": "vscode",
+      "userUid": "automatic",
+      "userGid": "automatic"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "hashicorp.terraform",
+        "ms-azuretools.vscode-docker",
+        "ms-python.python",
+        "ms-python.pylint",
+        "ms-python.black-formatter",
+        "redhat.vscode-yaml",
+        "ms-vscode.makefile-tools",
+        "amazonwebservices.aws-toolkit-vscode",
+        "saoudrizwan.claude-dev",
+        "augment.vscode-augment"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "/bin/bash",
+            "icon": "terminal-bash"
+          }
+        },
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.linting.enabled": true,
+        "python.linting.pylintEnabled": true,
+        "python.formatting.provider": "black",
+        "terraform.experimentalFeatures.validateOnSave": true,
+        "terraform.experimentalFeatures.prefillRequiredFields": true,
+        "files.associations": {
+          "*.tf": "terraform",
+          "*.tfvars": "terraform"
+        }
+      }
+    }
+  },
+
+  "containerEnv": {
+    "AWS_ACCESS_KEY_ID": "test",
+    "AWS_SECRET_ACCESS_KEY": "test",
+    "AWS_DEFAULT_REGION": "us-east-1",
+    "LOCALSTACK_HOST": "localhost",
+    "LOCALSTACK_PORT": "4566",
+    "TF_LOG": "INFO"
+  },
+
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker-host.sock,type=bind"
+  ],
+
+  "runArgs": [
+    "--privileged"
+  ],
+
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+
+  "forwardPorts": [
+    4566,
+    4666
+  ],
+
+  "portsAttributes": {
+    "4566": {
+      "label": "LocalStack",
+      "onAutoForward": "notify"
+    },
+    "4666": {
+      "label": "LocalStack Pro",
+      "onAutoForward": "notify"
+    }
+  },
+
+  "remoteUser": "vscode",
+
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}"
+}
