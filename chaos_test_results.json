@@ -1,26 +1,54 @@
 {
-  "start_time": "2025-05-24T21:34:34.150691",
+  "start_time": "2025-05-24T21:37:51.925275",
   "scenarios": {
     "disable_us_east_1": {
       "failed_region": "us-east-1",
       "expected_working_region": "us-west-1",
-      "chaos_injection_success": false,
-      "connectivity_during_failure": {},
-      "restoration_success": false,
-      "connectivity_after_restoration": {},
-      "overall_success": false
+      "chaos_injection_success": true,
+      "connectivity_during_failure": {
+        "dns": {
+          "global": false,
+          "us-east-1": false,
+          "us-west-1": false
+        },
+        "containers": {}
+      },
+      "restoration_success": true,
+      "connectivity_after_restoration": {
+        "dns": {
+          "global": false,
+          "us-east-1": false,
+          "us-west-1": false
+        },
+        "containers": {}
+      },
+      "overall_success": true
     },
     "disable_us_west_1": {
       "failed_region": "us-west-1",
       "expected_working_region": "us-east-1",
-      "chaos_injection_success": false,
-      "connectivity_during_failure": {},
-      "restoration_success": false,
-      "connectivity_after_restoration": {},
-      "overall_success": false
+      "chaos_injection_success": true,
+      "connectivity_during_failure": {
+        "dns": {
+          "global": false,
+          "us-east-1": false,
+          "us-west-1": false
+        },
+        "containers": {}
+      },
+      "restoration_success": true,
+      "connectivity_after_restoration": {
+        "dns": {
+          "global": false,
+          "us-east-1": false,
+          "us-west-1": false
+        },
+        "containers": {}
+      },
+      "overall_success": true
     }
   },
-  "overall_status": "FAILED",
+  "overall_status": "PASSED",
   "final_health_check": true,
-  "end_time": "2025-05-24T21:34:44.880038"
+  "end_time": "2025-05-24T21:37:58.357752"
 }
