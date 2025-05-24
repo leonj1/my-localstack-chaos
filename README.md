@@ -17,6 +17,34 @@ This setup provides a foundation for developing and testing globally distributed
 - Docker and Docker Compose installed
 - LocalStack Pro authentication token
 
+## Development Environment Options
+
+### Option 1: DevContainer (Recommended)
+
+For the best development experience, use the provided DevContainer which includes all necessary tools pre-configured:
+
+1. **Prerequisites:**
+   - VS Code with the Dev Containers extension
+   - Docker Desktop running
+
+2. **Setup:**
+   - Open this project in VS Code
+   - When prompted, click "Reopen in Container"
+   - Set your LocalStack Pro token: `export LOCALSTACK_AUTH_TOKEN=your-token`
+   - Start development: `make localstack-up`
+
+The DevContainer includes:
+- Python 3.13 with development packages
+- Docker & Docker Compose
+- Terraform with latest version
+- AWS CLI configured for LocalStack
+- LocalStack CLI
+- Useful aliases and development tools
+
+See [.devcontainer/README.md](.devcontainer/README.md) for detailed information.
+
+### Option 2: Local Setup
+
 ## Setup
 
 1. Set your LocalStack Pro authentication token as an environment variable:
@@ -177,3 +205,10 @@ If container ports change after redeployment, use `docker ps | grep nginx` to fi
 
 ### LocalStack Authentication
 If you encounter authentication issues with LocalStack Pro, verify your `LOCALSTACK_AUTH_TOKEN` is correctly set in your environment.
+
+### DevContainer Issues
+If you encounter issues with the DevContainer:
+1. Ensure Docker Desktop is running
+2. Try rebuilding the container: "Dev Containers: Rebuild Container"
+3. Check the container logs for error messages
+4. See [.devcontainer/README.md](.devcontainer/README.md) for troubleshooting tips
