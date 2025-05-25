@@ -130,6 +130,107 @@ For example:
 docker-compose run terraform plan
 ```
 
+## How It Works - Sequence Diagram
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Make as Makefile
+    participant Docker as Docker Compose
+    participant LS as LocalStack Pro
+    participant TF as Terraform
+    participant Chaos as Chaos Test Suite
+    participant ECS as ECS Services
+    participant R53 as Route53
+    participant Nginx as Nginx Containers
+
+    Note over User,Nginx: 1. Infrastructure Setup Phase
+    User->>Make: make all-up
+    Make->>Docker: docker-compose up -d
+    Docker->>LS: Start LocalStack Pro container
+    LS-->>Docker: LocalStack ready (port 4666)
+    
+    Make->>TF: Build Terraform image & init
+    TF->>LS: terraform init (via LocalStack network)
+    LS-->>TF: Terraform initialized
+    
+    Make->>TF: terraform apply
+    TF->>LS: Create VPCs in us-east-1 & us-west-1
+    TF->>LS: Create subnets, IGWs, route tables
+    TF->>LS: Deploy ECS clusters & services
+    TF->>LS: Create Route53 hosted zone
+    LS->>Nginx: Start Nginx containers (region-specific)
+    LS->>ECS: Register ECS tasks
+    LS->>R53: Configure DNS records
+    LS-->>TF: Infrastructure deployed
+    TF-->>Make: Deployment complete
+    
+    Note over User,Nginx: 2. Chaos Testing Phase
+    User->>Make: make chaos-test
+    Make->>Chaos: python3 chaos_test.py --full-test
+    
+    Note over Chaos,Nginx: Initial Health Check
+    Chaos->>LS: Check LocalStack health
+    LS-->>Chaos: Health OK
+    Chaos->>R53: Test DNS resolution (global & regional)
+    R53-->>Chaos: DNS working
+    Chaos->>Nginx: Test container connectivity
+    Nginx-->>Chaos: Containers responding
+    
+    Note over Chaos,Nginx: Scenario A: us-east-1 Failure
+    Chaos->>ECS: Scale us-east-1 ECS service to 0
+    Chaos->>R53: Modify us-east-1 DNS to invalid IP
+    ECS->>Nginx: Stop us-east-1 containers
+    
+    Chaos->>R53: Test global DNS (should route to us-west-1)
+    R53-->>Chaos: Routes to us-west-1
+    Chaos->>Nginx: Test us-west-1 container
+    Nginx-->>Chaos: us-west-1 still responding
+    
+    Note over Chaos,Nginx: Recovery Testing
+    Chaos->>ECS: Scale us-east-1 ECS service back to 2
+    Chaos->>R53: Restore us-east-1 DNS records
+    ECS->>Nginx: Restart us-east-1 containers
+    
+    Chaos->>R53: Test all DNS endpoints
+    R53-->>Chaos: All endpoints working
+    Chaos->>Nginx: Test all containers
+    Nginx-->>Chaos: All containers responding
+    
+    Note over Chaos,Nginx: Scenario B: us-west-1 Failure
+    Chaos->>ECS: Scale us-west-1 ECS service to 0
+    Chaos->>R53: Modify us-west-1 DNS to invalid IP
+    ECS->>Nginx: Stop us-west-1 containers
+    
+    Chaos->>R53: Test global DNS (should route to us-east-1)
+    R53-->>Chaos: Routes to us-east-1
+    Chaos->>Nginx: Test us-east-1 container
+    Nginx-->>Chaos: us-east-1 still responding
+    
+    Note over Chaos,Nginx: Final Recovery & Validation
+    Chaos->>ECS: Scale us-west-1 ECS service back to 2
+    Chaos->>R53: Restore us-west-1 DNS records
+    ECS->>Nginx: Restart us-west-1 containers
+    
+    Chaos->>R53: Final health check - all endpoints
+    R53-->>Chaos: All endpoints healthy
+    Chaos->>Nginx: Final connectivity test
+    Nginx-->>Chaos: All containers healthy
+    
+    Chaos-->>Make: Test results (JSON + human-readable)
+    Make-->>User: Chaos test complete ✅/❌
+    
+    Note over User,Nginx: 3. Cleanup Phase (Optional)
+    User->>Make: make all-down
+    Make->>TF: terraform destroy
+    TF->>LS: Destroy all AWS resources
+    LS->>ECS: Stop ECS services
+    LS->>Nginx: Stop containers
+    LS->>R53: Delete DNS records
+    Make->>Docker: docker-compose down
+    Docker->>LS: Stop LocalStack container
+```
+
 ## Architecture Overview
 
 The infrastructure consists of the following components:
